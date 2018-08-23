@@ -9,23 +9,31 @@ socket.on('disconnect', function () {
 });
 
 socket.on('newMessage', function (message) {
-    var formattedTime = moment(message.createdAt).
-    console.log('New Message', message);
-    var li = $('<li></li>');
-    li.text(`${message.from}: ${message.text}`);
+    var formattedTime = moment(message.createdAt).format('h:mm a');
+    var template = $('#message-template').html();
+    var html = Mustache.render(template, {
+        text: message.text,
+        from: message.from,
+        createdAt: formattedTime
+    });
 
-    $('#messages').append(li);
+    $('#messages').append(html);
+    scrollBottom();
 });
 
 socket.on('newLocationMessage', function (message) {
-    console.log('New Message', message);
-    var li = $('<li></li>');
+    var formattedTime = moment(message.createdAt).format('h:mm a');
     var a = $(`<a target="_blank">My current location</a>`);
-    li.text(`${message.from}: `);
     a.attr('href', message.url);
+    var template = $('#message-location-template').html();
+    var html = Mustache.render(template, {
+        url: message.url,
+        from: message.from,
+        createdAt: formattedTime
+    });
 
-    li.append(a);
-    $('#messages').append(li);
+    $('#messages').append(html);
+    scrollBottom();
 });
 
 jQuery('#message-form').on('submit', function (e) {
@@ -36,7 +44,7 @@ jQuery('#message-form').on('submit', function (e) {
     socket.emit('createMessage', {
         from: 'User',
         text: messageTextbox.val()
-    }, function () { 
+    }, function () {
         messageTextbox.val('');
     });
 });
@@ -60,3 +68,18 @@ locationButton.on('click', function () {
         alert('Unable to fectch location');
     });
 });
+
+function scrollBottom() {
+    var messages = $('#messages');
+    var newMessage = messages.children('li:last-child');
+    // heights
+    var clientHeight = messages.prop('clientHeight');
+    var scrollTop = messages.prop('scrollTop');
+    var scrollHeight = messages.prop('scrollHeight');
+    var newMessageHeight = newMessage.innerHeight();
+    var lastMessageHeight = newMessage.prev().innerHeight();
+
+    if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+        messages.scrollTop(scrollHeight);
+    }
+}
