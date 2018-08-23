@@ -6,6 +6,15 @@ var generateMessage = (from, text) =>{
     };
 };
 
+var generateLocationMessage = (from, lat, lng) =>{
+    return {
+        from,
+        url:`https://map.baidu.com/?q=${lat},${lng}`,
+        createdAt: new Date().getTime()
+    };
+};
+
 module.exports = {
-    generateMessage
+    generateMessage,
+    generateLocationMessage
 };
